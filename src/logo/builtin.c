@@ -3691,6 +3691,17 @@ static const FFlogo P[] = {
             FF_COLOR_FG_WHITE
         },
     },
+    // PhobOS
+    {
+        .names = {"PhobOS"},
+        .lines = FASTFETCH_DATATEXT_LOGO_PHOBOS,
+        .colors = {
+            FF_COLOR_FG_YELLOW,
+            FF_COLOR_FG_WHITE,
+        },
+        .colorKeys = FF_COLOR_FG_YELLOW,
+        .colorTitle = FF_COLOR_FG_YELLOW,
+    },
     // PhyOS
     {
         .names = {"PhyOS"},
