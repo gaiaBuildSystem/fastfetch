@@ -1258,6 +1258,17 @@ static const FFlogo D[] = {
         .colorKeys = FF_COLOR_FG_RED,
         .colorTitle = FF_COLOR_FG_RED,
     },
+    // DeimOS
+    {
+        .names = {"DeimOS"},
+        .lines = FASTFETCH_DATATEXT_LOGO_DEIMOS,
+        .colors = {
+            FF_COLOR_FG_RED,
+            FF_COLOR_FG_WHITE,
+        },
+        .colorKeys = FF_COLOR_FG_RED,
+        .colorTitle = FF_COLOR_FG_RED,
+    },
     // DebianSmall
     {
         .names = {"Debian_small", "debian-linux_small"},
