@@ -3698,6 +3698,7 @@ static const FFlogo P[] = {
         .colors = {
             FF_COLOR_FG_YELLOW,
             FF_COLOR_FG_WHITE,
+            FF_COLOR_FG_RED,
         },
         .colorKeys = FF_COLOR_FG_YELLOW,
         .colorTitle = FF_COLOR_FG_YELLOW,
