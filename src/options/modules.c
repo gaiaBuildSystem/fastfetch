@@ -46,6 +46,7 @@ void ffOptionsInitModules(FFOptionsModules* options)
     ffInitMouseOptions(&options->mouse);
     ffInitNetIOOptions(&options->netIo);
     ffInitOSOptions(&options->os);
+    ffInitOStreeOptions(&options->ostree);
     ffInitOpenCLOptions(&options->openCL);
     ffInitOpenGLOptions(&options->openGL);
     ffInitPackagesOptions(&options->packages);
@@ -123,6 +124,7 @@ void ffOptionsDestroyModules(FFOptionsModules* options)
     ffDestroyMouseOptions(&options->mouse);
     ffDestroyNetIOOptions(&options->netIo);
     ffDestroyOSOptions(&options->os);
+    ffDestroyOStreeOptions(&options->ostree);
     ffDestroyOpenCLOptions(&options->openCL);
     ffDestroyOpenGLOptions(&options->openGL);
     ffDestroyPhysicalDiskOptions(&options->physicalDisk);

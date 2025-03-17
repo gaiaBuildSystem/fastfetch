@@ -387,6 +387,7 @@ set(LIBFASTFETCH_SRC
     src/detection/opencl/opencl.c
     src/detection/opengl/opengl_shared.c
     src/detection/os/os.c
+    src/detection/ostree/ostree.c
     src/detection/packages/packages.c
     src/detection/physicalmemory/physicalmemory.c
     src/detection/publicip/publicip.c
@@ -443,6 +444,7 @@ set(LIBFASTFETCH_SRC
     src/modules/opencl/opencl.c
     src/modules/opengl/opengl.c
     src/modules/os/os.c
+    src/modules/ostree/ostree.c
     src/modules/packages/packages.c
     src/modules/physicaldisk/physicaldisk.c
     src/modules/physicalmemory/physicalmemory.c

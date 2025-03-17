@@ -102,6 +102,7 @@ static FFModuleBaseInfo* O[] = {
     (FFModuleBaseInfo*) &instance.config.modules.openCL,
     (FFModuleBaseInfo*) &instance.config.modules.openGL,
     (FFModuleBaseInfo*) &instance.config.modules.os,
+    (FFModuleBaseInfo*) &instance.config.modules.ostree,
     NULL,
 };
 

@@ -47,6 +47,7 @@
 #include "modules/opengl/option.h"
 #include "modules/opencl/option.h"
 #include "modules/os/option.h"
+#include "modules/ostree/option.h"
 #include "modules/packages/option.h"
 #include "modules/physicaldisk/option.h"
 #include "modules/physicalmemory/option.h"

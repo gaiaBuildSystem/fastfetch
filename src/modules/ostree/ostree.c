@@ -1,0 +1,101 @@
+#include "common/printing.h"
+#include "common/jsonconfig.h"
+#include "common/option.h"
+#include "detection/ostree/ostree.h"
+#include "modules/ostree/ostree.h"
+#include "util/stringUtils.h"
+
+#include <ctype.h>
+
+static void buildOutputDefault(const FFOStreeResult* os, FFstrbuf* result)
+{
+}
+
+void ffPrintOStreeCommitDeployed(FFOStreeOptions* options)
+{
+    const FFOStreeResult* result = ffDetectDeployment();
+
+    if (result->detected == false) {
+        ffPrintError(FF_OS_TREE_MODULE_NAME, 0, &options->moduleArgs, FF_PRINT_TYPE_DEFAULT, "No OStree deployment detected");
+        return;
+    }
+
+    if(options->moduleArgs.outputFormat.length == 0)
+    {
+        ffPrintLogoAndKey(FF_OS_TREE_MODULE_NAME, 0, &options->moduleArgs, FF_PRINT_TYPE_DEFAULT);
+        puts(result->commit_hash.chars);
+    }
+    else
+    {
+        FF_PRINT_FORMAT_CHECKED(FF_OS_TREE_MODULE_NAME, 0, &options->moduleArgs, FF_PRINT_TYPE_DEFAULT, ((FFformatarg[]) {
+            FF_FORMAT_ARG(result->commit_hash, "commit-hash"),
+        }));
+    }
+}
+
+// FIXME: I only used this from copy and paste needs fix
+bool ffParseOStreeCommandOptions(FFOStreeOptions* options, const char* key, const char* value)
+{
+    const char* subKey = ffOptionTestPrefix(key, FF_OS_TREE_MODULE_NAME);
+    if (!subKey) return false;
+    if (ffOptionParseModuleArgs(key, subKey, value, &options->moduleArgs))
+        return true;
+
+    return false;
+}
+
+// FIXME: I only used this from copy and paste needs fix
+void ffParseOStreeJsonObject(FFOSOptions* options, yyjson_val* module)
+{
+    yyjson_val *key_, *val;
+    size_t idx, max;
+    yyjson_obj_foreach(module, idx, max, key_, val)
+    {
+        const char* key = yyjson_get_str(key_);
+        if(ffStrEqualsIgnCase(key, "type"))
+            continue;
+
+        if (ffJsonConfigParseModuleArgs(key, val, &options->moduleArgs))
+            continue;
+
+        ffPrintError(FF_OS_TREE_MODULE_NAME, 0, &options->moduleArgs, FF_PRINT_TYPE_DEFAULT, "Unknown JSON key %s", key);
+    }
+}
+
+// FIXME: I only used this from copy and paste needs fix
+void ffGenerateOStreeJsonConfig(FFOStreeOptions* options, yyjson_mut_doc* doc, yyjson_mut_val* module)
+{
+    __attribute__((__cleanup__(ffDestroyOStreeOptions))) FFOStreeOptions defaultOptions;
+    ffInitOStreeOptions(&defaultOptions);
+
+    ffJsonConfigGenerateModuleArgsConfig(doc, module, &defaultOptions.moduleArgs, &options->moduleArgs);
+}
+
+// FIXME: I only used this from copy and paste needs fix
+void ffGenerateOStreeJsonResult(FF_MAYBE_UNUSED FFOStreeOptions* options, yyjson_mut_doc* doc, yyjson_mut_val* module)
+{
+}
+
+static FFModuleBaseInfo ffModuleInfo = {
+    .name = FF_OS_TREE_MODULE_NAME,
+    .description = "Print the actual OStree hash deployed",
+    .parseCommandOptions = (void*) ffParseOStreeCommandOptions,
+    .parseJsonObject = (void*) ffParseOStreeJsonObject,
+    .printModule = (void*) ffPrintOStreeCommitDeployed,
+    .generateJsonResult = (void*) ffGenerateOStreeJsonResult,
+    .generateJsonConfig = (void*) ffGenerateOStreeJsonConfig,
+    .formatArgs = FF_FORMAT_ARG_LIST(((FFModuleFormatArg[]) {
+        {"Deployed hash", "commit-hash"},
+    }))
+};
+
+void ffInitOStreeOptions(FFOStreeOptions* options)
+{
+    options->moduleInfo = ffModuleInfo;
+    ffOptionInitModuleArg(&options->moduleArgs, "");
+}
+
+void ffDestroyOStreeOptions(FFOStreeOptions* options)
+{
+    ffOptionDestroyModuleArg(&options->moduleArgs);
+}

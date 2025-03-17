@@ -47,6 +47,7 @@
 #include "modules/opengl/opengl.h"
 #include "modules/opencl/opencl.h"
 #include "modules/os/os.h"
+#include "modules/ostree/ostree.h"
 #include "modules/packages/packages.h"
 #include "modules/physicaldisk/physicaldisk.h"
 #include "modules/physicalmemory/physicalmemory.h"

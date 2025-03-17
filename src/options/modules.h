@@ -47,6 +47,7 @@ typedef struct FFOptionsModules
     FFMouseOptions mouse;
     FFNetIOOptions netIo;
     FFOSOptions os;
+    FFOStreeOptions ostree;
     FFOpenCLOptions openCL;
     FFOpenGLOptions openGL;
     FFPackagesOptions packages;
