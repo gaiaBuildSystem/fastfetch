@@ -141,6 +141,7 @@ static FFModuleBaseInfo* T[] = {
     (FFModuleBaseInfo*) &instance.config.modules.title,
     (FFModuleBaseInfo*) &instance.config.modules.theme,
     (FFModuleBaseInfo*) &instance.config.modules.tpm,
+    (FFModuleBaseInfo*) &instance.config.modules.aktualizr,
     NULL,
 };
 

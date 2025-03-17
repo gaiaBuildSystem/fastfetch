@@ -3,6 +3,7 @@
 
 void ffOptionsInitModules(FFOptionsModules* options)
 {
+    ffInitAktualizrOptions(&options->aktualizr);
     ffInitBatteryOptions(&options->battery);
     ffInitBiosOptions(&options->bios);
     ffInitBluetoothOptions(&options->bluetooth);
