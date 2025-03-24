@@ -4577,7 +4577,7 @@ static const FFlogo T[] = {
     },
     // Torizon OS
     {
-        .names = {"Torizon OS", "TorizonCore"},
+        .names = {"Torizon OS", "TorizonCore", "torizon"},
         .lines = FASTFETCH_DATATEXT_LOGO_TORIZONCORE,
         .colors = {
             FF_COLOR_FG_LIGHT_WHITE,
