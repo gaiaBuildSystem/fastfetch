@@ -85,13 +85,33 @@ static const char* getWslg(FFstrbuf* result)
     if (!ffAppendFileBuffer("/mnt/wslg/versions.txt", result))
         return "Failed to read /mnt/wslg/versions.txt";
 
-    if (!ffStrbufStartsWithS(result, "WSLg "))
-        return "Failed to find WSLg version";
-
     ffStrbufSubstrBeforeFirstC(result, '\n');
+    ffStrbufSubstrBeforeFirstC(result, '\r');
+
+    if (ffStrbufStartsWithIgnCaseS(result, "WSLg"))
+    {
+        ffStrbufSubstrAfterFirstC(result, 'g');
+        ffStrbufTrimLeft(result, ' ');
+
+        // Newer WSLg formats include an optional parenthesized descriptor
+        // before the actual version token.
+        if (ffStrbufStartsWithS(result, "("))
+        {
+            if (!ffStrbufSubstrAfterFirstC(result, ')'))
+                return "Failed to parse WSLg version";
+            ffStrbufTrimLeft(result, ' ');
+        }
+
+        ffStrbufTrimLeft(result, ':');
+        ffStrbufTrimLeft(result, ' ');
+    }
+
     ffStrbufSubstrBeforeFirstC(result, '+');
-    ffStrbufSubstrAfterFirstC(result, ':');
-    ffStrbufTrimLeft(result, ' ');
+    ffStrbufTrimRightSpace(result);
+
+    if (result->length == 0)
+        return "Failed to parse WSLg version";
+
     return NULL;
 }
 
