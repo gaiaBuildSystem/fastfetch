@@ -201,122 +201,39 @@ static const char* getWslg(FFstrbuf* result) {
         return "Failed to read /mnt/wslg/versions.txt";
     }
 
-    if (ffStrbufStartsWithS(result, "WSLg: ")) { // WSL 2.9.3+
-        ffStrbufSubstrBeforeFirstC(result, '\n');
-        ffStrbufSubstrAfter(result, (uint32_t) (strlen("WSLg: ") - 1));
-    } else if (ffStrbufStartsWithS(result, "WSLg ")) {
-        ffStrbufSubstrBeforeFirstC(result, '\n');
-        ffStrbufSubstrBeforeFirstC(result, '+');
-        ffStrbufSubstrAfterFirstC(result, ':');
+    ffStrbufSubstrBeforeFirstC(result, '\n');
+    ffStrbufSubstrBeforeFirstC(result, '\r');
+
+    if (ffStrbufStartsWithIgnCaseS(result, "WSLg"))
+    {
+        ffStrbufSubstrAfterFirstC(result, 'g');
         ffStrbufTrimLeft(result, ' ');
-    } else {
-        ffStrbufClear(result);
-        return "Failed to parse WSLg version from /mnt/wslg/versions.txt";
+
+        // Newer WSLg formats include an optional parenthesized descriptor
+        // before the actual version token.
+        if (ffStrbufStartsWithS(result, "("))
+        {
+            if (!ffStrbufSubstrAfterFirstC(result, ')'))
+                return "Failed to parse WSLg version";
+            ffStrbufTrimLeft(result, ' ');
+        }
+
+        ffStrbufTrimLeft(result, ':');
+        ffStrbufTrimLeft(result, ' ');
     }
 
-    return nullptr;
-}
-    #endif
+    ffStrbufSubstrBeforeFirstC(result, '+');
+    ffStrbufTrimRightSpace(result);
 
-#endif // !__ANDROID__
+    if (result->length == 0)
+        return "Failed to parse WSLg version";
 
-static bool extractI3Version(const char* line, [[maybe_unused]] uint32_t len, void* userdata) {
-    int count = 0;
-    sscanf(line, "%*d.%*d%n", &count);
-    if (count == 0) {
-        return true;
-    }
-
-    ffStrbufSetNS((FFstrbuf*) userdata, len, line);
-    return false;
-}
-
-static const char* getI3(FFstrbuf* result) {
-    FF_STRBUF_AUTO_DESTROY path = ffStrbufCreate();
-    const char* error = ffFindExecutableInPath("i3", &path);
-    if (error) {
-        return "Failed to find i3 executable path";
-    }
-
-    ffBinaryExtractStrings(path.chars, extractI3Version, result, (uint32_t) strlen("0.0"));
-    if (result->length > 0) {
-        return nullptr;
-    }
-
-    if (ffProcessAppendStdOut(result, (char* const[]) { path.chars, "--version", nullptr }) == nullptr) { // i3 version 1.10 C 2009...
-        ffStrbufSubstrAfterFirstS(result, "version ");
-        ffStrbufSubstrBeforeFirstC(result, ' ');
-        return nullptr;
-    }
-
-    return "Failed to run command `i3 --version`";
+    return NULL;
 }
 
-static const char* getCtwm(FFstrbuf* result) {
-    FF_STRBUF_AUTO_DESTROY path = ffStrbufCreate();
-    const char* error = ffFindExecutableInPath("ctwm", &path);
-    if (error) {
-        return "Failed to find ctwm executable path";
-    }
-
-    ffBinaryExtractStrings(path.chars, extractCommonWmVersion, result, (uint32_t) strlen("0.0.0"));
-    if (result->length > 0) {
-        return nullptr;
-    }
-
-    if (ffProcessAppendStdOut(result, (char* const[]) { path.chars, "--version", nullptr }) == nullptr) { // ctwm version 4.0.1\n...
-        ffStrbufSubstrBeforeFirstC(result, '\n');
-        ffStrbufSubstrAfterLastC(result, ' ');
-        return nullptr;
-    }
-
-    return "Failed to run command `ctwm --version`";
-}
-
-static const char* getFvwm(FFstrbuf* result) {
-    FF_STRBUF_AUTO_DESTROY path = ffStrbufCreate();
-    const char* error = ffFindExecutableInPath("fvwm", &path);
-    if (error) {
-        return "Failed to find fvwm executable path";
-    }
-
-    ffBinaryExtractStrings(path.chars, extractCommonWmVersion, result, (uint32_t) strlen("0.0.0"));
-    if (result->length > 0) {
-        return nullptr;
-    }
-
-    if (ffProcessAppendStdOut(result, (char* const[]) { path.chars, "-version", nullptr }) == nullptr) { // [FVWM][main]: fvwm Version 2.2.5\n...
-        ffStrbufSubstrBeforeFirstC(result, '\n');
-        ffStrbufSubstrAfterLastC(result, ' ');
-        return nullptr;
-    }
-
-    return "Failed to run command `fvwm -version`";
-}
-
-static const char* getOpenbox(FFstrbuf* result) {
-    FF_STRBUF_AUTO_DESTROY path = ffStrbufCreate();
-    const char* error = ffFindExecutableInPath("openbox", &path);
-    if (error) {
-        return "Failed to find openbox executable path";
-    }
-
-    ffBinaryExtractStrings(path.chars, extractCommonWmVersion, result, (uint32_t) strlen("0.0.0"));
-    if (result->length > 0) {
-        return nullptr;
-    }
-
-    if (ffProcessAppendStdOut(result, (char* const[]) { path.chars, "--version", nullptr }) == nullptr) { // Openbox 3.6.1\n...
-        ffStrbufSubstrBeforeFirstC(result, '\n');
-        ffStrbufSubstrAfterLastC(result, ' ');
-        return nullptr;
-    }
-
-    return "Failed to run command `openbox --version`";
-}
-
-const char* ffDetectWMVersion(const FFstrbuf* wmName, FFstrbuf* result, [[maybe_unused]] FFWMOptions* options) {
-    if (!wmName) {
+const char* ffDetectWMVersion(const FFstrbuf* wmName, FFstrbuf* result, FF_MAYBE_UNUSED FFWMOptions* options)
+{
+    if (!wmName)
         return "No WM detected";
     }
 
