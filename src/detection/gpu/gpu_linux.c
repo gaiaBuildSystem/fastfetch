@@ -685,6 +685,9 @@ static const char* drmDetectGPUs(const FFGPUOptions* options, FFlist* gpus)
             strchr(entry->d_name + 4, '-') != NULL)
             continue;
 
+        // Reset to /sys/class/drm/ before building the path, so that a failed
+        // read (which `continue`s below) cannot leave a stale path behind.
+        ffStrbufSubstrBefore(&drmDir, drmDirLength);
         ffStrbufAppendS(&drmDir, entry->d_name);
 
         ffStrbufAppendS(&drmDir, "/device/modalias");
@@ -696,8 +699,6 @@ static const char* drmDetectGPUs(const FFGPUOptions* options, FFlist* gpus)
             detectPci(options, gpus, &buffer, &drmDir, entry->d_name);
         else if (ffStrbufStartsWithS(&buffer, "of:"))
             detectOf(gpus, &buffer, &drmDir, entry->d_name);
-
-        ffStrbufSubstrBefore(&drmDir, drmDirLength);
     }
 
     return NULL;
