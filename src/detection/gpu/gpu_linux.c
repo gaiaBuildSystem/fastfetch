@@ -611,13 +611,67 @@ FF_MAYBE_UNUSED static const char* drmDetectAsahiSpecific(FFGPUResult* gpu, cons
 
     return NULL;
 }
+
+FF_MAYBE_UNUSED static const char* drmDetectTegraSpecific(FFGPUResult* gpu, const char* name, FFstrbuf* buffer)
+{
+    // On Tegra SoCs the DRM card is the host1x display controller
+    // (e.g. `nvidia,tegra234-display`); the actual 3D engine is the
+    // nvgpu device driven by the nvidia kernel module.
+    ffStrbufSetStatic(&gpu->vendor, FF_GPU_VENDOR_NAME_NVIDIA);
+
+    if (ffReadFileBuffer("/proc/driver/nvidia/version", buffer))
+    {
+        ffStrbufSetS(&gpu->driver, "nvidia");
+        if (ffStrbufContainS(buffer, " Open "))
+            ffStrbufAppendS(&gpu->driver, " (open source)");
+        else
+            ffStrbufAppendS(&gpu->driver, " (proprietary)");
+    }
+
+    if (gpu->name.length == 0)
+    {
+        // name is of the form `tegra234-display`; the SoC id is the part before '-'
+        char soc[32];
+        uint32_t socLen = strcspn(name, "-");
+        if (socLen >= ARRAY_SIZE(soc))
+            socLen = ARRAY_SIZE(soc) - 1;
+        memcpy(soc, name, socLen);
+        soc[socLen] = '\0';
+
+        // Use the GPU silicon implementation inside the SoC, e.g.
+        // Tegra234 (Orin) integrates an Ampere GA10B GPU.
+        const char* socName = NULL;
+        if (strcmp(soc, "tegra234") == 0) socName = "Tegra234 (Ampere GA10B)";
+        else if (strcmp(soc, "tegra194") == 0) socName = "Tegra194 (Maxwell)";
+        else if (strcmp(soc, "tegra186") == 0) socName = "Tegra186 (Maxwell)";
+        else if (strcmp(soc, "tegra184") == 0) socName = "Tegra184 (Maxwell)";
+        else if (strcmp(soc, "tegra124") == 0) socName = "Tegra124 (Kepler GK20A)";
+        else if (strcmp(soc, "tegra114") == 0) socName = "Tegra114 (Kepler GK20A)";
+        else if (strcmp(soc, "tegra210") == 0) socName = "Tegra210 (Maxwell GM05)";
+        else if (strcmp(soc, "tegra30") == 0) socName = "Tegra30 (Fermi GF10)";
+        else if (strcmp(soc, "tegra20") == 0) socName = "Tegra20 (ULP GF10)";
+
+        if (socName)
+            ffStrbufSetS(&gpu->name, socName);
+        else
+        {
+            // Fallback: "Tegra" + the numeric part of the SoC id
+            ffStrbufSetS(&gpu->name, "Tegra");
+            const char* digits = strpbrk(soc, "0123456789");
+            if (digits)
+                ffStrbufAppendS(&gpu->name, digits);
+        }
+    }
+
+    return NULL;
+}
 #endif
 
 static const char* detectOf(FFlist* gpus, FFstrbuf* buffer, FFstrbuf* drmDir, const char* drmKey)
 {
     char compatible[256]; // vendor,model-name
-    if (sscanf(buffer->chars + strlen("of:"), "NgpuT%*[^C]C%255[^C]", compatible) != 1)
-        return "Failed to parse of modalias or not a GPU device";
+    if (sscanf(buffer->chars + strlen("of:"), "N%*[^T]T%*[^C]C%255[^C]", compatible) != 1)
+        return "Failed to parse of modalias";
 
     char* name = strchr(compatible, ',');
     if (name)
@@ -645,6 +699,8 @@ static const char* detectOf(FFlist* gpus, FFstrbuf* buffer, FFstrbuf* drmDir, co
     #ifdef __aarch64__
     if (ffStrbufEqualS(&gpu->driver, "asahi"))
         drmDetectAsahiSpecific(gpu, name, buffer, drmKey);
+    else if (name && strncmp(name, "tegra", 5) == 0)
+        drmDetectTegraSpecific(gpu, name, buffer);
     #endif
 
     if (!gpu->name.length)
